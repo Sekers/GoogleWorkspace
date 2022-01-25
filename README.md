@@ -1,4 +1,4 @@
-# SKYAPI PowerShell Module <!-- omit in toc -->
+# GoogleClassroomAPI PowerShell Module <!-- omit in toc -->
 
 ## Table of Contents  <!-- omit in toc -->
 
