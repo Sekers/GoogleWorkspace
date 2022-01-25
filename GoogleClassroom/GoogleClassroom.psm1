@@ -56,10 +56,6 @@ function Set-GoogleClassroomAPITokensFilePath
 function Get-AuthTokensFromFile
 {
     param (
-        [parameter(
-        Position=0,
-        ValueFromPipeline=$true,
-        ValueFromPipelineByPropertyName=$true)]
     )
 
     try
