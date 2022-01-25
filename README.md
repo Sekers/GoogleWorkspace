@@ -34,7 +34,7 @@ See the [GoogleClassroomAPI Wiki](https://github.com/Sekers/GoogleClassroomAPI/w
 
 ## Documentation
 
-The SKYAPI module documentation is hosted in the [GoogleClassroomAPI Wiki](https://github.com/Sekers/GoogleClassroomAPI/wiki). Examples are included in the [Sample Usage Scripts folder](./Sample_Usage_Scripts).
+The Google Classroom module documentation is hosted in the [GoogleClassroomAPI Wiki](https://github.com/Sekers/GoogleClassroomAPI/wiki). Examples are included in the [Sample Usage Scripts folder](./Sample_Usage_Scripts).
 
 ---
 
