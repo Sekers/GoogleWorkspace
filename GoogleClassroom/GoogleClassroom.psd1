@@ -72,6 +72,7 @@ Description = 'PowerShell Module for the Google Classroom API'
 FunctionsToExport = @(
     'Set-GoogleClassroomAPIConfigFilePath',
     'Set-GoogleClassroomAPITokensFilePath',
+    'Get-AuthTokensFromFile',
     'Connect-GoogleClassroom',
     'Get-GoogleClassroomConfig',
     'Get-GoogleClassroomCourse',
