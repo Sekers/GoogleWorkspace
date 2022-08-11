@@ -33,7 +33,7 @@ Copyright = '(c) The Grim Admin. All rights reserved.'
 Description = 'PowerShell Module for the Google Classroom API'
 
 # Minimum version of the PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -72,7 +72,7 @@ Description = 'PowerShell Module for the Google Classroom API'
 FunctionsToExport = @(
     'Set-GoogleClassroomAPIConfigFilePath',
     'Set-GoogleClassroomAPITokensFilePath',
-    'Get-AuthTokensFromFile',
+    'Get-GoogleClassroomAuthTokensFromFile',
     'Connect-GoogleClassroom',
     'Get-GoogleClassroomConfig',
     'Get-GoogleClassroomCourse',
@@ -114,10 +114,10 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @("API", 'PowerShell', 'Google', "GoogleClassroom", "Classroom")
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/Sekers/GoogleClassroomAPI/blob/main/LICENSE'
 
         # A URL to the main website for this project.
         ProjectUri = 'https://github.com/Sekers/GoogleClassroomAPI'
@@ -126,7 +126,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = 'https://github.com/Sekers/GoogleClassroomAPI/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
         Prerelease = 'beta'
@@ -148,4 +148,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
