@@ -4,14 +4,16 @@
 # Configure script to use TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Public Enums
-# CourseState (https://developers.google.com/classroom/reference/rest/v1/courses#CourseState)
-# COURSE_STATE_UNSPECIFIED - No course state. No returned Course message will use this value.
-# ACTIVE - The course is active.
-# ARCHIVED - The course has been archived. You cannot modify it except to change it to a different state.
-# PROVISIONED - The course has been created, but not yet activated. It is accessible by the primary teacher and domain administrators, who may modify it or change it to the ACTIVE or DECLINED states. A course may only be changed to PROVISIONED if it is in the DECLINED state.
-# DECLINED - The course has been created, but declined. It is accessible by the course owner and domain administrators, though it will not be displayed in the web UI. You cannot modify the course except to change it to the PROVISIONED state. A course may only be changed to DECLINED if it is in the PROVISIONED state.
-# SUSPENDED - The course has been suspended. You cannot modify the course, and only the user identified by the ownerId can view the course. A course may be placed in this state if it potentially violates the Terms of Service.
+# Type Definitions
+
+# Public Enum
+# Name: CourseState (https://developers.google.com/classroom/reference/rest/v1/courses#CourseState)
+# Value: COURSE_STATE_UNSPECIFIED - No course state. No returned Course message will use this value.
+# Value: ACTIVE - The course is active.
+# Value: ARCHIVED - The course has been archived. You cannot modify it except to change it to a different state.
+# Value: PROVISIONED - The course has been created, but not yet activated. It is accessible by the primary teacher and domain administrators, who may modify it or change it to the ACTIVE or DECLINED states. A course may only be changed to PROVISIONED if it is in the DECLINED state.
+# Value: DECLINED - The course has been created, but declined. It is accessible by the course owner and domain administrators, though it will not be displayed in the web UI. You cannot modify the course except to change it to the PROVISIONED state. A course may only be changed to DECLINED if it is in the PROVISIONED state.
+# Value: SUSPENDED - The course has been suspended. You cannot modify the course, and only the user identified by the ownerId can view the course. A course may be placed in this state if it potentially violates the Terms of Service.
 
 Add-Type -TypeDefinition @"
 public enum CourseState {
