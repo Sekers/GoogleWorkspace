@@ -61,7 +61,7 @@ Function Connect-GoogleClassroom
     # Get Tokens & Set Creation Times
     try
     {
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
         $refresh_token_creation = $Authorization.refresh_token_creation
         $access_token_creation = $Authorization.access_token_creation    
     }
@@ -78,7 +78,7 @@ Function Connect-GoogleClassroom
         # Get Tokens & Set Creation Times
         try
         {
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
             $refresh_token_creation = $Authorization.refresh_token_creation
             $access_token_creation = $Authorization.access_token_creation    
         }
@@ -100,7 +100,7 @@ Function Connect-GoogleClassroom
             $NextAction = $null
             try
             {
-                $Authorization = Get-AuthTokensFromFile
+                $Authorization = Get-GoogleClassroomAuthTokensFromFile
                 $Authorization = Get-AccessToken -client_id $client_id -client_secret $client_secret -refresh_token $($Authorization.refresh_token) -refresh_token_creation $($Authorization.refresh_token_creation) 
             }
             catch
@@ -109,7 +109,7 @@ Function Connect-GoogleClassroom
                 $NextAction = CatchInvokeErrors($_)
 
                 # Just in case the token was refreshed by the error catcher, update the $Authorization variable
-                $Authorization = Get-AuthTokensFromFile
+                $Authorization = Get-GoogleClassroomAuthTokensFromFile
             }
         }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 

@@ -55,7 +55,7 @@ function Set-GoogleClassroomAPITokensFilePath
     New-Variable -Name 'google_clasroom_api_tokens_file_path' -Value $Path -Scope Global -Force
 }
 
-function Get-AuthTokensFromFile
+function Get-GoogleClassroomAuthTokensFromFile
 {
     param (
     )
@@ -227,13 +227,13 @@ Function Get-UnpagedEntity
     param($uid, $url, $endUrl, $params, $response_field)
 
     # Grab the keys
-    $Authorization = Get-AuthTokensFromFile
+    $Authorization = Get-GoogleClassroomAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
         Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -277,7 +277,7 @@ Function Get-UnpagedEntity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -293,13 +293,13 @@ Function Get-PagedEntity
     param($uid, $url, $endUrl, $params, $response_field,$response_limit)
 
     # Grab the keys
-    $Authorization = Get-AuthTokensFromFile
+    $Authorization = Get-GoogleClassroomAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
         Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -377,7 +377,7 @@ Function Get-PagedEntity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -392,13 +392,13 @@ function Submit-Entity
     param ($uid, $url, $endUrl, $params)
 
     # Grab the keys
-    $Authorization = Get-AuthTokensFromFile
+    $Authorization = Get-GoogleClassroomAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
         Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -440,7 +440,7 @@ function Submit-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -455,13 +455,13 @@ function Update-Entity
     param ($uid, $url, $endUrl, $params)
 
     # Grab the keys
-    $Authorization = Get-AuthTokensFromFile
+    $Authorization = Get-GoogleClassroomAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
         Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
     }
 
     # Build Body & Update Mask
@@ -508,7 +508,7 @@ function Update-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -523,13 +523,13 @@ function Remove-Entity
     param ($uid, $url, $endUrl)
 
     # Grab the keys
-    $Authorization = Get-AuthTokensFromFile
+    $Authorization = Get-GoogleClassroomAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
         Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-AuthTokensFromFile
+        $Authorization = Get-GoogleClassroomAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -558,7 +558,7 @@ function Remove-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-AuthTokensFromFile
+            $Authorization = Get-GoogleClassroomAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
