@@ -16,7 +16,7 @@
     Both These *MUST* Be Set Prior to Running Commands.
 #>
 # Set-GoogleClassroomAPIConfigFilePath -Path "$PSScriptRoot\Config\google_classroom_api_config.json" # The location where you placed the credentials file you downloaded from the Google developer console.
-# Set-GoogleClassroomAPITokensFilePath -Path "$env:HOMEDRIVE$env:HOMEPATH\API_Tokens\myapp_google_classroom_key.json" # The location where you want the encrypted access and refresh tokens to be stored.
+# Set-GoogleClassroomAPITokensFilePath -Path "$env:USERPROFILE\API_Tokens\myapp_google_classroom_key.json" # The location where you want the encrypted access and refresh tokens to be stored.
 
 <#
     Optionally, Test Connecting to the Google Classroom API Service.
