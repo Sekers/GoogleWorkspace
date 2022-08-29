@@ -237,6 +237,7 @@ Function Get-UnpagedEntity
     }
 
     # Create Request Uri
+    $uid = [uri]::EscapeDataString($uid)
     $FullUri = $url + $uid + $endUrl
     $Request = [System.UriBuilder]$FullUri
     
@@ -303,6 +304,7 @@ Function Get-PagedEntity
     }
 
     # Create Request Uri
+    $uid = [uri]::EscapeDataString($uid)
     $FullUri = $url + $uid + $endUrl
     $Request = [System.UriBuilder]$FullUri
     
@@ -402,6 +404,7 @@ function Submit-Entity
     }
 
     # Create Request Uri
+    $uid = [uri]::EscapeDataString($uid)
     $FullUri = $url + $uid + $endUrl
     $Request = [System.UriBuilder]$FullUri
 
@@ -482,6 +485,7 @@ function Update-Entity
     $PatchRequest = $PatchRequest | ConvertTo-Json
 
     # Create Request Uri
+    $uid = [uri]::EscapeDataString($uid)
     $FullUri = $url + $uid + $updateMask + $endUrl
     $Request = [System.UriBuilder]$FullUri
 
@@ -533,6 +537,7 @@ function Remove-Entity
     }
 
     # Create Request Uri
+    $uid = [uri]::EscapeDataString($uid)
     $FullUri = $url + $uid + $endUrl
     $Request = [System.UriBuilder]$FullUri
 
