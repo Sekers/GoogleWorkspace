@@ -34,9 +34,9 @@
 # Write-Host "Total Active Courses Count:" $ActiveCourses.Count
 # Get-GoogleClassroomCoursesList -ResponseLimit 5
 # Get-GoogleClassroomCoursesList | Where-Object name -Like "test"
-# Get-GoogleClassroomCoursesList | Where-Object {$_.name -match "visual art" -and $_.courseState -eq "ACTIVE"} |  Sort-Object name
-# Get-GoogleClassroomCoursesList | Where-Object {$_.section -match "7EBx" -and $_.courseState -eq "ACTIVE"} |  Sort-Object name
-# Get-GoogleClassroomCoursesList | Where-Object {$_.ownerId -eq "123456789101112131415" -and $_.courseState -eq "ACTIVE"} |  Sort-Object name
+# Get-GoogleClassroomCoursesList -courseStates 'ACTIVE' | Where-Object {$_.name -match "visual art"} |  Sort-Object name
+# Get-GoogleClassroomCoursesList -courseStates 'ACTIVE' | Where-Object {$_.section -match "7EBx"} |  Sort-Object name
+# Get-GoogleClassroomCoursesList -courseStates 'ACTIVE' | Where-Object {$_.ownerId -eq "123456789101112131415"} |  Sort-Object name
 # Get-GoogleClassroomCoursesList -teacherId "teacher@school.edu"
 # Get-GoogleClassroomCoursesList -studentId "child@school.edu"
 # Get-GoogleClassroomCoursesList -teacherId "teacher@school.edu" -studentId "child@school.edu"
