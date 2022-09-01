@@ -15,6 +15,8 @@
 # Value: DECLINED - The course has been created, but declined. It is accessible by the course owner and domain administrators, though it will not be displayed in the web UI. You cannot modify the course except to change it to the PROVISIONED state. A course may only be changed to DECLINED if it is in the PROVISIONED state.
 # Value: SUSPENDED - The course has been suspended. You cannot modify the course, and only the user identified by the ownerId can view the course. A course may be placed in this state if it potentially violates the Terms of Service.
 
+# Check to see if the CourseState Type is already loading to prevent the "Cannot add type. The type name 'CourseState' already exists." error message. 
+if ("CourseState" -as [type]) {} else {
 Add-Type -TypeDefinition @"
 public enum CourseState {
     COURSE_STATE_UNSPECIFIED,
@@ -25,6 +27,7 @@ public enum CourseState {
     SUSPENDED
 }
 "@
+}
 
 # Functions
 function Set-GoogleClassroomAPIConfigFilePath
