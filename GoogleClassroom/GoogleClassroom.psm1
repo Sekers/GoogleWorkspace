@@ -630,10 +630,18 @@ function CatchInvokeErrors($InvokeError)
         }
         500 # Internal Server Error (Backend error). 
         {
-            # Sleep for 100 second and return the try command. I don't know if this is too long, but it seems reasonable for now.
+            # Sleep for 5 seconds and return the try command. I don't know if this is a good length, but it seems reasonable since we try 5 times before failing.
             # The other option would be to use the exponential backoff method where You can periodically retry a failed request over an increasing amount of time to handle errors
             # related to rate limits, network volume, or response time. For example, you might retry a failed request after one second, then after two seconds, and then after four seconds.
-            Start-Sleep -Seconds 100
+            Start-Sleep -Seconds 5
+            'retry'
+        }
+        503 # The service is currently unavailable.
+        {
+            # Sleep for 5 seconds and return the try command. I don't know if this is a good length, but it seems reasonable since we try 5 times before failing.
+            # The other option would be to use the exponential backoff method where You can periodically retry a failed request over an increasing amount of time to handle errors
+            # related to rate limits, network volume, or response time. For example, you might retry a failed request after one second, then after two seconds, and then after four seconds.
+            Start-Sleep -Seconds 5
             'retry'
         }
         default
