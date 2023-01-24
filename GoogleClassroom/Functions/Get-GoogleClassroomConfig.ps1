@@ -37,7 +37,7 @@ function Get-GoogleClassroomConfig
             token_uri = ($google_classroom_config | Select-Object -Property "installed").installed.token_uri
             auth_provider_x509_cert_url = ($google_classroom_config | Select-Object -Property "installed").installed.auth_provider_x509_cert_url
             client_secret = ($google_classroom_config | Select-Object -Property "installed").installed.client_secret
-            redirect_uris = ($google_classroom_config | Select-Object -Property "installed").installed.redirect_uris
+            redirect_uri = ($google_classroom_config | Select-Object -Property "installed").installed.redirect_uri
         }
 
         return $google_classroom_config

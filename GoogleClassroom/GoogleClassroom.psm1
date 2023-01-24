@@ -4,6 +4,9 @@
 # Configure script to use TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# Set Global User Data Path Variable
+New-Variable -Name 'google_api_user_data_path' -Value "$([Environment]::GetEnvironmentVariable('LOCALAPPDATA'))\GoogleClassroom PowerShell" -Scope Global -Force
+
 # Type Definitions
 
 # Public Enum
@@ -155,40 +158,321 @@ Function Get-AccessToken
     $Authorization
 }
 
-Function Show-OAuthWindow
+Function Show-GoogleAPIOAuthWindow
 {
-    param(
-        [System.Uri]$Url
+    Param(
+        [parameter(
+        Position=0,
+        Mandatory=$true,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [System.Uri]$Url,
+
+        [parameter(
+        Position=1,
+        Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [ValidateSet('','EdgeWebView2','MiniHTTPServer')] # Allows null to be passed
+        [string]$AuthenticationMethod,
+
+        [parameter(
+        Position=2,
+        Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [switch]$ClearBrowserControlCache
     )
+    # This will request a Google access token (https://developers.google.com/identity/protocols/oauth2#2.-obtain-an-access-token-from-the-google-authorization-server.)
+    # Uses the Loopback IP option:  https://developers.google.com/identity/protocols/oauth2/native-app#redirect-uri_loopback
 
-    # # This will request a Google access token (https://developers.google.com/identity/protocols/oauth2#2.-obtain-an-access-token-from-the-google-authorization-server.)
-
-    Start-Process $Url
-    $output = ""
-    
-    do
+    # If Edge WebView 2 is the Authentication Method & the runtime not installed - https://developer.microsoft.com/en-us/microsoft-edge/webview2/
+    # If you run the following command from an elevated process or command prompt, it triggers a per-machine install.
+    # If you don't run the command from an elevated process or command prompt, a per-user install will take place.
+    #However, a per-user install is automatically replaced by a per-machine install, if a per-machine Microsoft Edge Updater is in place.
+    #A per-machine Microsoft Edge Updater is provided as part of Microsoft Edge, except for the Canary preview channel of Microsoft Edge.
+    #For more information, see https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#installing-the-runtime-as-per-machine-or-per-user.
+    if ($null -eq $AuthenticationMethod -or "" -eq $AuthenticationMethod -or $AuthenticationMethod -eq "EdgeWebView2")
     {
-        $output = Read-Host "Paste in the authorization code."
-    }
-    while ($null -eq $output -or $output -eq "")
+        # Check if WebView2 is installed
+        $SourceProductName = 'Microsoft Edge WebView2 Runtime' # Partial Name is Fine as Long as it is Unique enough for a match
 
-    $output
+        # Get a Listing of Installed Applications From the Registry
+        $InstalledApplicationsFromRegistry = @()
+        $InstalledApplicationsFromRegistry += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" # HKLM Apps
+        $InstalledApplicationsFromRegistry += Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" #HKCU Apps
+        if ([System.Environment]::Is64BitProcess)
+        {
+            $InstalledApplicationsFromRegistry += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # x86 Apps when on 64-bit
+        }
+        
+        # Get EdgeWebView2 Installed Version (only pull the 1st entry in case more than one comes up)
+        $EdgeWebViewVersionInstalled = $InstalledApplicationsFromRegistry | Where-Object {$_.DisplayName -match $SourceProductName}
+        if ([string]::IsNullOrEmpty($EdgeWebViewVersionInstalled))
+        {
+            $EdgeWebViewVersionInstalled = "0.0.0.0" # Good idea to set something in case it's not installed due to casting later on.
+        }
+        else
+        {
+            $EdgeWebViewVersionInstalled = $([array]($InstalledApplicationsFromRegistry | Where-Object {$_.DisplayName -match $SourceProductName})[0]).Version
+        }
+
+        while ((-not ($InstalledApplicationsFromRegistry | Where-Object {$_.DisplayName -match $SourceProductName})) -and ($null -eq $AuthenticationMethod -or "" -eq $AuthenticationMethod -or $AuthenticationMethod -eq "EdgeWebView2") )
+        {
+            Write-Warning "Microsoft Edge WebView2 Runtime is not installed and is required for browser-based authentication. Please install the runtime and try again."
+            $PromptNoWebView2Runtime_Title = "Options"
+            $PromptNoWebView2Runtime_Message = "Enter your choice:"
+            $PromptNoWebView2Runtime_Choices = [System.Management.Automation.Host.ChoiceDescription[]]@("&Download & install the Edge WebView2 runtime", "&Try alternative method (beta)", "&Cancel & exit")
+            $PromptNoWebView2Runtime_Default = 0
+            $PromptNoWebView2Runtime_Selection = $host.UI.PromptForChoice($PromptNoWebView2Runtime_Title,$PromptNoWebView2Runtime_Message,$PromptNoWebView2Runtime_Choices,$PromptNoWebView2Runtime_Default)
+
+            switch($PromptNoWebView2Runtime_Selection)
+            {
+                0   {
+                        Write-Host "Attempting to download & install the Microsoft Edge WebView2 runtime"
+                        # Create Download Folder If It Doesn't Already Exist
+                        $DownloadPath = "$google_api_user_data_path\Downloads"
+                        $null = New-Item -ItemType Directory -Path $DownloadPath -Force
+
+                        # Download WebView2 Evergreen Bootstrapper
+                        $DownloadURL = "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+                        $DownloadContent = Invoke-WebRequest -Uri $DownloadURL
+                        $DownloadFileName = "Microsoft Edge WebView2 Runtime Installer.exe"
+
+                        # Create the file (this will overwrite any existing file with the same name)
+                        $WebView2Installer = [System.IO.FileStream]::new("$DownloadPath\$DownloadFileName", [System.IO.FileMode]::Create)
+                        $WebView2Installer.Write($DownloadContent.Content, 0, $DownloadContent.RawContentLength)
+                        $WebView2Installer.Close()
+
+                        # Install
+                        Write-Host "File Downloaded. Attempting to run installer."
+                        Start-Process -Filepath "$DownloadPath\$DownloadFileName" -Wait
+
+                        # Get a Listing of Installed Applications From the Registry
+                        $InstalledApplicationsFromRegistry = @()
+                        $InstalledApplicationsFromRegistry += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" # HKLM Apps
+                        $InstalledApplicationsFromRegistry += Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" #HKCU Apps
+                        if ([System.Environment]::Is64BitProcess)
+                        {
+                            $InstalledApplicationsFromRegistry += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # x86 Apps when on 64-bit
+                        }
+
+                        # Retry Opening Authentication Window
+                        Write-Host "Retrying Authentication...`n"
+                    }
+                1   {
+                        $AuthenticationMethod = "MiniHTTPServer"
+                    }
+                2   {
+                        Write-Host "Exiting..."
+                        Exit
+                    }
+            }
+        }
+    }
+
+    switch ($AuthenticationMethod)
+    {
+        MiniHTTPServer # TODO
+        {
+            Write-Host "`nUsing this option will attempt to authenticate using an alternate method by building a mini webserver in PowerShell. Continue?"
+            $PromptMiniWebserver_Title = "Options"
+            $PromptMiniWebserver_Message = "Enter your choice:"
+            $PromptMiniWebserver_Choices = [System.Management.Automation.Host.ChoiceDescription[]]@("&Load temporary HTTP server", "&Cancel & exit")
+            $PromptMiniWebserver_Default = 0
+            $PromptMiniWebserver_Selection = $host.UI.PromptForChoice($PromptMiniWebserver_Title,$PromptMiniWebserver_Message,$PromptMiniWebserver_Choices,$PromptMiniWebserver_Default)
+
+            switch($PromptMiniWebserver_Selection)
+            {
+                0   {
+                        Write-Warning "Sorry. The mini webserver authentication feature is not yet implemented."
+                        Write-Host "Exiting..."
+                        Exit
+                    }
+                1   {
+                        Write-Host "Exiting..."
+                        Exit
+                    }
+            }
+        }
+        default # EdgeWebView2
+        {            
+            # Set EdgeWebView2 Control Version to Use
+            $EdgeWebView2Control_VersionNumber = '1.0.1518.46'
+            switch ($PSVersionTable.PSEdition)
+            {
+                Desktop {$EdgeWebView2Control_DotNETVersion = "net45"}
+                Core {$EdgeWebView2Control_DotNETVersion = "netcoreapp3.0"}
+                Default {$EdgeWebView2Control_DotNETVersion = "netcoreapp3.0"}
+            }
+            switch ([System.Environment]::Is64BitProcess)
+            {
+                $true {$EdgeWebView2Control_OSArchitecture = "win-x64"}
+                $false {$EdgeWebView2Control_OSArchitecture = "win-x86"}
+                Default {$EdgeWebView2Control_OSArchitecture = "win-x64"}
+            }
+            
+            # Update $AuthenticationMethod Variable (not currently needed but is useful to have in a variable)
+            $AuthenticationMethod = "EdgeWebView2"
+            
+            # Load Assemblies
+            Add-Type -AssemblyName System.Windows.Forms
+
+            # Unpack the nupkg and grab the following two DLLs out of the /lib folder.
+            # - Microsoft.Web.WebView2.WinForms.dll (there's a different version for each .NET type, but the same file for x86 & x64)
+            # - Microsoft.Web.WebView2.Core.dll (while there's a copy for each .NET type, so far they have been the same exact file; same file for x86 & x64 too)
+            # In addition, get the following file from the /runtimes folder and put it in the same locations.
+            # - WebView2Loader.dll (different for x86 & x64, but same for .NET Core & .NET 45)
+            Add-Type -Path "$PSScriptRoot\Dependencies\Microsoft.Web.WebView2\$EdgeWebView2Control_VersionNumber\$EdgeWebView2Control_DotNETVersion\$EdgeWebView2Control_OSArchitecture\Microsoft.Web.WebView2.WinForms.dll"
+
+            $form = New-Object -TypeName System.Windows.Forms.Form -Property @{Width=600;Height=800}
+            $WebView2 = New-Object -TypeName Microsoft.Web.WebView2.WinForms.WebView2
+
+            $WebView2.CreationProperties = New-Object -TypeName 'Microsoft.Web.WebView2.WinForms.CoreWebView2CreationProperties'
+            $WebView2.CreationProperties.UserDataFolder = $google_api_user_data_path
+
+            # Clear WebView2 cache in the previously specified UserDataFolder, if requested.
+            # Using the WebView2 SDK to clear the browsing data is best, but wasn't released until version 1.0.1245.22 of the control.
+            # This version SDK requires EdgeWebView2 version 102.0.1245.22 to be installed for full API compatibility.
+            # So, we only clear the cache using the SDK if this version or higher of the WebView2 runtime is installed.
+            # Otherwise, we just hardcode deleting the folder.
+            # Note that we have to delete the folder before the control is loaded,
+            # but we can't call the clear until it is initialized (so that code is further down).
+            if ($ClearBrowserControlCache -and [System.Version]$EdgeWebViewVersionInstalled -lt [System.Version]'102.0.1245.22')
+            {
+                Remove-Item "$($WebView2.CreationProperties.UserDataFolder)\EBWebView\Default" -Force -Recurse -ErrorAction Ignore
+                $ClearBrowserControlCache = $false
+            }
+
+            $WebView2.Source = $Url
+            $WebView2.Size = New-Object System.Drawing.Size(584, 760)
+
+            # Set Event Handlers. See APIs here: https://github.com/MicrosoftEdge/WebView2Browser#webview2-apis
+            $WebView2_NavigationCompleted = {
+                # Write-Host $($WebView2.Source.AbsoluteUri) # DEBUG LINE
+                if ($WebView2.Source.AbsoluteUri -match "error=[^&]*|$([regex]::escape($redirect_uri))*")
+                {
+                    $form.Close()
+                }
+            }
+            $WebView2.add_NavigationCompleted($WebView2_NavigationCompleted)
+
+            # Set Event Handler for Clearing the Browser Data, if requested.
+            # We can't actually clear the browser data until the CoreWebView2 property is created, so that's why it's down here as an event action.
+            # More info: https://learn.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.winforms.webview2
+            # This event is triggered when the control's CoreWebView2 has finished being initialized
+            # (regardless of how initialization was triggered) but before it is used for anything.
+            # More info: https://learn.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.wpf.webview2.corewebview2initializationcompleted
+            if ($ClearBrowserControlCache -and [System.Version]$EdgeWebViewVersionInstalled -ge [System.Version]'102.0.1245.22')
+            {
+                $WebView2_CoreWebView2InitializationCompleted = {
+                    $WebView2.CoreWebView2.Profile.ClearBrowsingDataAsync()
+                }
+                $WebView2.add_CoreWebView2InitializationCompleted($WebView2_CoreWebView2InitializationCompleted)
+                $ClearBrowserControlCache = $false
+            }
+            
+            # Add WebView2 Control to the Form and Show It
+            $form.Controls.Add($WebView2)
+            $form.Add_Shown({$form.Activate()})
+            $form.TopMost = $true # Make's the dialog coming up above the PowerShell console more consistent (though not 100% it seems).
+            $form.ShowDialog() | Out-Null
+
+            # Parse Return URL
+            $queryOutput = [System.Web.HttpUtility]::ParseQueryString($WebView2.Source.Query)
+            $output = @{}
+            foreach($key in $queryOutput.Keys){
+                $output["$key"] = $queryOutput[$key]
+            }
+
+            # Dispose Form & Webview2 Control
+            $WebView2.Dispose()
+            $form.Dispose()
+        }
+    }
+
+    # Validate the $output variable before returning
+    if ($null -eq $output["code"]) {
+        Write-Warning "Authentication or authorization failed. Try again?"
+        $PromptNoAuthCode_Title = "Options"
+        $PromptNoAuthCode_Message = "Enter your choice:"
+        $PromptNoAuthCode_Choices = [System.Management.Automation.Host.ChoiceDescription[]]@("&Yes", "&No; exit the script")
+        $PromptNoAuthCode_Default = 0
+        $PromptNoAuthCode_Selection = $host.UI.PromptForChoice($PromptNoAuthCode_Title,$PromptNoAuthCode_Message,$PromptNoAuthCode_Choices,$PromptNoAuthCode_Default)
+
+        switch($PromptNoAuthCode_Selection)
+        {
+            0   { # Retry authenticating & authorizing
+                    $authOutput = Show-GoogleAPIOAuthWindow -url $Url -AuthenticationMethod $AuthenticationMethod -ClearBrowserControlCache:$ClearBrowserControlCache
+                    return $authOutput
+                }
+            1   {
+                    throw "Authentication or authorization failed. Exiting..."
+                }
+        }
+    }
+
+    Return $output
 }
 
-Function Get-NewTokens
+Function Get-GoogleAPINewTokens
 {
     [CmdletBinding()]
-    param($google_classroom_api_tokens_file_path)
+    Param(
+        
+    [parameter(
+        Position=0,
+        Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [string]$google_classroom_api_tokens_file_path, 
+    
+        [parameter(
+        Position=1,
+        Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [ValidateSet('','EdgeWebView2','MiniHTTPServer')] # Allows null to be passed
+        [string]$AuthenticationMethod,
+
+        [parameter(
+        Position=2,
+        Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [switch]$ClearBrowserControlCache
+    )
+
+    # Set the necessary configuration variables.
+    $google_classroom_config = Get-GoogleClassroomConfig -ConfigPath $google_classroom_api_config_file_path
+    $client_id = $google_classroom_config.client_id
+    # $project_id = $google_classroom_config.project_id # Not used.
+    $auth_uri = $google_classroom_config.auth_uri
+    $token_uri = $google_classroom_config.token_uri
+    # $auth_provider_x509_cert_url = $google_classroom_config.auth_provider_x509_cert_url # Not used.
+    $client_secret = $google_classroom_config.client_secret
+    $redirect_uri = $google_classroom_config.redirect_uri
+
+    # Load Web assembly
+    [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
+
+    # Build authorisation URI
+    $scopes = 'https://www.googleapis.com/auth/classroom.courses https://www.googleapis.com/auth/classroom.rosters https://www.googleapis.com/auth/classroom.guardianlinks.students'
+    $strUri = $auth_uri +
+    "?client_id=$client_id" +
+    "&redirect_uri=" + [System.Web.HttpUtility]::UrlEncode($redirect_uri) +
+    '&scope=' + [System.Web.HttpUtility]::UrlEncode($scopes) +
+    '&response_type=code'
 
     # Get Authorization code (one-time use code)
-    $authorization_code = Show-OAuthWindow -URL $strUri
+    $authOutput = Show-GoogleAPIOAuthWindow -Url $strUri -AuthenticationMethod $AuthenticationMethod -ClearBrowserControlCache:$ClearBrowserControlCache
 
     # Swap authorization code (one-time use) for an access token and a refresh token.
     # Build tokens request
     $AuthorizationPostRequest = 'client_id=' + $client_id + '&' +
     'client_secret=' + [System.Web.HttpUtility]::UrlEncode($client_secret) + '&' +
-    'redirect_uri=' + [System.Web.HttpUtility]::UrlEncode($redirect_uris[0]) + '&' +
-    'code=' + [System.Web.HttpUtility]::UrlEncode($authorization_code) + '&' +
+    'redirect_uri=' + [System.Web.HttpUtility]::UrlEncode($redirect_uri) + '&' +
+    'code=' + [System.Web.HttpUtility]::UrlEncode($authOutput["code"]) + '&' +
     'grant_type=authorization_code'
 
     # Make the request
@@ -205,7 +489,7 @@ Function Get-NewTokens
         $google_classroom_api_tokens_file_path_ParentDir = Split-Path -Path $google_classroom_api_tokens_file_path
         If(-not (Test-Path $google_classroom_api_tokens_file_path))
         {
-            New-Item -ItemType Directory -Force -Path $google_classroom_api_tokens_file_path_ParentDir
+            $null = New-Item -ItemType Directory -Force -Path $google_classroom_api_tokens_file_path_ParentDir
         }
 
         # Add Access & Refresh Token expirys to PSCustomObject and Save credentials to file
