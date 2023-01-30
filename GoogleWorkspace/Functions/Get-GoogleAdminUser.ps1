@@ -1,5 +1,9 @@
 # https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
 # Returns user profile information.
+# Scope suggested: https://www.googleapis.com/auth/admin.directory.user.readonly
+# Note that non-admin users can use this scope as well
+# (A non-admin user can make a 'users.get' or 'users.list' request with the viewType parameter
+#  equal to 'domain_public' to retrieve a user's public profile.)
 
 # Parameter,Required,Type,Description
 # IDs,no,string,Comma-delimited identifier of the Google user IDs you want profile information for.
