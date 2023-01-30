@@ -1,5 +1,5 @@
 # https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
-# Returns user profile information.
+# Returns user profile information via the Google Workspace Admin SDK Directory API.
 # Scope suggested: https://www.googleapis.com/auth/admin.directory.user.readonly
 # Note that non-admin users can use this scope as well
 # (A non-admin user can make a 'users.get' or 'users.list' request with the viewType parameter
