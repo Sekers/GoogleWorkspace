@@ -922,7 +922,7 @@ function CatchInvokeErrors($InvokeError)
             {
                 ACCESS_TOKEN_SCOPE_INSUFFICIENT
                 {
-                    throw "Request had insufficient authentication scopes. Please run 'Connect-GoogleWorkspace' with the 'ForceReauthentication' parameter and include the necessary OAuth scopes."
+                    throw "Request had insufficient authentication scopes. Please run Connect-GoogleWorkspace with the -ForceReauthentication parameter and include the necessary OAuth scopes."
                 }
                 Default
                 {
