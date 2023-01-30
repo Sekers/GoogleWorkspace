@@ -1,5 +1,5 @@
 # https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
-# Returns courses.
+# Returns user profile information.
 
 # Parameter,Required,Type,Description
 # IDs,no,string,Comma-delimited identifier of the Google user IDs you want profile information for.
@@ -11,12 +11,15 @@ function Get-GoogleAdminUser
 
         [parameter(
         Position=0,
-        Mandatory=$false,
+        ParameterSetName = 'ByID',
+        Mandatory=$true,
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
         [string[]]$IDs, # Array as we loop through submitted IDs
 
         [parameter(
+        ParameterSetName = 'ByDomain',
+        Mandatory=$true,
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
         [string]$domain,
