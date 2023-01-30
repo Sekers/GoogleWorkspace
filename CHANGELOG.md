@@ -1,4 +1,11 @@
-# Changelog for Google Classroom PowerShell Module
+# Changelog for Google Workspace PowerShell Module
+
+## [0.3.0](https://github.com/Sekers/GoogleClassroomAPI/tree/0.3.0) - (2023-01-30)
+
+### Features
+
+- Enlarge module focus from the Google Classroom API to the Google Workspace API.
+- First release to PowerShell Gallery
 
 ## [0.2.0](https://github.com/Sekers/GoogleClassroomAPI/tree/0.2.0) - (2023-01-24)
 
