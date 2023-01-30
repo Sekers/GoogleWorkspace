@@ -1,4 +1,4 @@
-﻿# Google Classroom Module
+﻿# Google Workspae API Module
 # More info available at https://developers.google.com/classroom & https://developers.google.com/identity/protocols/oauth2
 
 # Configure script to use TLS 1.2
@@ -9,6 +9,7 @@ New-Variable -Name 'google_api_user_data_path' -Value "$([Environment]::GetEnvir
 
 # Type Definitions
 
+# Google Classroom API
 # Public Enum
 # Name: CourseState (https://developers.google.com/classroom/reference/rest/v1/courses#CourseState)
 # Value: COURSE_STATE_UNSPECIFIED - No course state. No returned Course message will use this value.
@@ -33,7 +34,7 @@ public enum CourseState {
 }
 
 # Functions
-function Set-GoogleClassroomAPIConfigFilePath
+function Set-GoogleWorkspaceConfigFilePath
 {
     param (
         [Parameter(
@@ -44,10 +45,10 @@ function Set-GoogleClassroomAPIConfigFilePath
         [string]$Path
     )
     
-    New-Variable -Name 'google_classroom_api_config_file_path' -Value $Path -Scope Global -Force
+    New-Variable -Name 'google_workspace_api_config_file_path' -Value $Path -Scope Global -Force
 }
 
-function Set-GoogleClassroomAPITokensFilePath
+function Set-GoogleWorkspaceTokensFilePath
 {
     param (
         [Parameter(
@@ -58,23 +59,39 @@ function Set-GoogleClassroomAPITokensFilePath
         [string]$Path
     )
    
-    New-Variable -Name 'google_clasroom_api_tokens_file_path' -Value $Path -Scope Global -Force
+    New-Variable -Name 'google_workspace_api_tokens_file_path' -Value $Path -Scope Global -Force
 }
 
-function Get-GoogleClassroomAuthTokensFromFile
+function Set-GoogleWorkspaceScopes
+{
+    param (
+        [Parameter(
+        Position=0,
+        Mandatory=$true,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [string[]]$Scopes #Array of strings
+    )
+   
+    # Convert $Scopes from an array of strings to a space-delimited string.
+    [string]$Scopes = $Scopes -join ' '
+    New-Variable -Name 'google_workspace_api_scopes' -Value $Scopes -Scope Global -Force
+}
+
+function Get-GoogleWorkspaceAuthTokensFromFile
 {
     param (
     )
 
     try
     {
-        $apiTokens = Get-Content $google_clasroom_api_tokens_file_path -ErrorAction Stop
+        $apiTokens = Get-Content $google_workspace_api_tokens_file_path -ErrorAction Stop
         $SecureString = $apiTokens | ConvertTo-SecureString -ErrorAction Stop
         $AuthTokensFromFile = ((New-Object PSCredential "user",$SecureString).GetNetworkCredential().Password) | ConvertFrom-Json
     }
     catch
     {
-        throw "JSON token file is missing, corrupted or invalid. Please run Connect-GoogleClassroom with the -ForceReauthentication parameter to recreate it."    
+        throw "JSON token file is missing, corrupted or invalid. Please run Connect-GoogleWorkspace with the -ForceReauthentication parameter to recreate it."    
     }
     
     $AuthTokensFromFile
@@ -422,13 +439,20 @@ Function Get-GoogleAPINewTokens
         
     [parameter(
         Position=0,
-        Mandatory=$false,
+        Mandatory=$true,
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
-        [string]$google_classroom_api_tokens_file_path, 
-    
+        [string]$google_workspace_api_tokens_file_path,
+
         [parameter(
         Position=1,
+        Mandatory=$true,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+        [string]$google_workspace_api_scopes,
+    
+        [parameter(
+        Position=2,
         Mandatory=$false,
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
@@ -436,32 +460,33 @@ Function Get-GoogleAPINewTokens
         [string]$AuthenticationMethod,
 
         [parameter(
-        Position=2,
+        Position=3,
         Mandatory=$false,
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
         [switch]$ClearBrowserControlCache
+
+
     )
 
     # Set the necessary configuration variables.
-    $google_classroom_config = Get-GoogleClassroomConfig -ConfigPath $google_classroom_api_config_file_path
-    $client_id = $google_classroom_config.client_id
-    # $project_id = $google_classroom_config.project_id # Not used.
-    $auth_uri = $google_classroom_config.auth_uri
-    $token_uri = $google_classroom_config.token_uri
-    # $auth_provider_x509_cert_url = $google_classroom_config.auth_provider_x509_cert_url # Not used.
-    $client_secret = $google_classroom_config.client_secret
-    $redirect_uri = $google_classroom_config.redirect_uri
+    $google_workspace_config = Get-GoogleWorkspaceConfig -ConfigPath $google_workspace_api_config_file_path
+    $client_id = $google_workspace_config.client_id
+    # $project_id = $google_workspace_config.project_id # Not used.
+    $auth_uri = $google_workspace_config.auth_uri
+    $token_uri = $google_workspace_config.token_uri
+    # $auth_provider_x509_cert_url = $google_workspace_config.auth_provider_x509_cert_url # Not used.
+    $client_secret = $google_workspace_config.client_secret
+    $redirect_uri = $google_workspace_config.redirect_uri
 
     # Load Web assembly
     [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
 
     # Build authorisation URI
-    $scopes = 'https://www.googleapis.com/auth/classroom.courses https://www.googleapis.com/auth/classroom.rosters https://www.googleapis.com/auth/classroom.guardianlinks.students'
     $strUri = $auth_uri +
     "?client_id=$client_id" +
     "&redirect_uri=" + [System.Web.HttpUtility]::UrlEncode($redirect_uri) +
-    '&scope=' + [System.Web.HttpUtility]::UrlEncode($scopes) +
+    '&scope=' + [System.Web.HttpUtility]::UrlEncode($google_workspace_api_scopes) +
     '&response_type=code'
 
     # Get Authorization code (one-time use code)
@@ -486,10 +511,10 @@ Function Get-GoogleAPINewTokens
     if ($?)
     {
         # Make sure path to credentials file exists and if it doesn't, create the parent folder
-        $google_classroom_api_tokens_file_path_ParentDir = Split-Path -Path $google_classroom_api_tokens_file_path
-        If(-not (Test-Path $google_classroom_api_tokens_file_path))
+        $google_workspace_api_tokens_file_path_ParentDir = Split-Path -Path $google_workspace_api_tokens_file_path
+        If(-not (Test-Path $google_workspace_api_tokens_file_path))
         {
-            $null = New-Item -ItemType Directory -Force -Path $google_classroom_api_tokens_file_path_ParentDir
+            $null = New-Item -ItemType Directory -Force -Path $google_workspace_api_tokens_file_path_ParentDir
         }
 
         # Add Access & Refresh Token expirys to PSCustomObject and Save credentials to file
@@ -500,7 +525,7 @@ Function Get-GoogleAPINewTokens
         $Authorization | Select-Object refresh_token, access_token, refresh_token_creation, access_token_creation | ConvertTo-Json `
             | ConvertTo-SecureString -AsPlainText -Force `
             | ConvertFrom-SecureString `
-            | Out-File -FilePath $google_classroom_api_tokens_file_path -Force
+            | Out-File -FilePath $google_workspace_api_tokens_file_path -Force
     }
     else
     {
@@ -514,13 +539,13 @@ Function Get-UnpagedEntity
     param($uid, $url, $endUrl, $params, $response_field)
 
     # Grab the keys
-    $Authorization = Get-GoogleClassroomAuthTokensFromFile
+    $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
-        Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-GoogleClassroomAuthTokensFromFile
+        Connect-GoogleWorkspace -ForceRefresh
+        $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -565,7 +590,7 @@ Function Get-UnpagedEntity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-GoogleClassroomAuthTokensFromFile
+            $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -581,13 +606,13 @@ Function Get-PagedEntity
     param($uid, $url, $endUrl, $params, $response_field,$response_limit)
 
     # Grab the keys
-    $Authorization = Get-GoogleClassroomAuthTokensFromFile
+    $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
-        Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-GoogleClassroomAuthTokensFromFile
+        Connect-GoogleWorkspace -ForceRefresh
+        $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -666,7 +691,7 @@ Function Get-PagedEntity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-GoogleClassroomAuthTokensFromFile
+            $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -681,13 +706,13 @@ function Submit-Entity
     param ($uid, $url, $endUrl, $params)
 
     # Grab the keys
-    $Authorization = Get-GoogleClassroomAuthTokensFromFile
+    $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
-        Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-GoogleClassroomAuthTokensFromFile
+        Connect-GoogleWorkspace -ForceRefresh
+        $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -730,7 +755,7 @@ function Submit-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-GoogleClassroomAuthTokensFromFile
+            $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -745,13 +770,13 @@ function Update-Entity
     param ($uid, $url, $endUrl, $params)
 
     # Grab the keys
-    $Authorization = Get-GoogleClassroomAuthTokensFromFile
+    $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
-        Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-GoogleClassroomAuthTokensFromFile
+        Connect-GoogleWorkspace -ForceRefresh
+        $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
     }
 
     # Build Body & Update Mask
@@ -799,7 +824,7 @@ function Update-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-GoogleClassroomAuthTokensFromFile
+            $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -814,13 +839,13 @@ function Remove-Entity
     param ($uid, $url, $endUrl)
 
     # Grab the keys
-    $Authorization = Get-GoogleClassroomAuthTokensFromFile
+    $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
 
     # Reconnect If the Access Token is Expired 
     if (-NOT (Confirm-TokenIsFresh -TokenCreation $Authorization.access_token_creation -TokenType Access))
     {
-        Connect-GoogleClassroom -ForceRefresh
-        $Authorization = Get-GoogleClassroomAuthTokensFromFile
+        Connect-GoogleWorkspace -ForceRefresh
+        $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
     }
 
     # Create Request Uri
@@ -850,7 +875,7 @@ function Remove-Entity
             $LastError = (ParseErrorForResponseBody($_) | ConvertFrom-Json).error
 
             # Just in case the token was refreshed by the error catcher, update these
-            $Authorization = Get-GoogleClassroomAuthTokensFromFile
+            $Authorization = Get-GoogleWorkspaceAuthTokensFromFile
         }
     }while ($NextAction -eq 'retry' -and $InvokeCount -lt $MaxInvokeCount)
 
@@ -872,24 +897,13 @@ function CatchInvokeErrors($InvokeError)
     $InvokeErrorMessageConvertedFromJSON = ($InvokeError_Parsed | ConvertFrom-Json).error
 
     # Get Status Code, or Error if Code is blank
-    $StatusCodeorError = 
-        If($InvokeErrorMessageConvertedFromJSON.code)
-        {
-            $InvokeErrorMessageConvertedFromJSON.code
-        }
-        else
-        {
-            If($InvokeErrorMessageConvertedFromJSON.status)
-            {
-                $InvokeErrorMessageConvertedFromJSON.status
-            }
-            else
-            {
-                {$InvokeErrorMessageConvertedFromJSON.message}
-            }
-        }
+    $InvokeError_Code = $InvokeErrorMessageConvertedFromJSON.code
+    $InvokeError_Message = $InvokeErrorMessageConvertedFromJSON.message
+    $InvokeError_Errors = $InvokeErrorMessageConvertedFromJSON.errors
+    $InvokeError_Status = $InvokeErrorMessageConvertedFromJSON.status
+    $InvokeError_Details = $InvokeErrorMessageConvertedFromJSON.details
 
-    Switch ($StatusCodeorError)
+    Switch ($InvokeError_Code)
     {
         400 # Bad request. Usually means that data in the initial request is invalid, improperly formatted or failed a precondition.
         {
@@ -899,12 +913,22 @@ function CatchInvokeErrors($InvokeError)
             # An unauthorized request also occurs if the authorization token expires or if the authorization header is not supplied (i.e., credentials used are invalid).
         {
             # Usually this happens if the token has expired.
-            Connect-GoogleClassroom -ForceRefresh
+            Connect-GoogleWorkspace -ForceRefresh
             'retry'
         }
         403 # An error 403 occurs for many reasons. Officially, it's "PERMISSION_DENIED" but is also used when users, etc. don't exist or are not part of the course admin's domain.
         {
-            throw $InvokeErrorMessageConvertedFromJSON
+            switch ($InvokeError_Details.reason)
+            {
+                ACCESS_TOKEN_SCOPE_INSUFFICIENT
+                {
+                    throw "Request had insufficient authentication scopes. Please run 'Connect-GoogleWorkspace' with the 'ForceReauthentication' parameter and include the necessary OAuth scopes."
+                }
+                Default
+                {
+                    throw $InvokeErrorMessageConvertedFromJSON
+                }
+            }
         }
         429 # Rate limit is exceeded (Too many requests). Try again in 1 seconds. 
         {
