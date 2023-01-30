@@ -12,7 +12,7 @@
 RootModule = 'GoogleWorkspace.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.3.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop','Core')
@@ -130,7 +130,7 @@ PrivateData = @{
         ReleaseNotes = 'https://github.com/Sekers/GoogleWorkspace/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'beta'
+        # Prerelease = ''
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
