@@ -3,6 +3,7 @@
 ## [0.3.1](https://github.com/Sekers/GoogleWorkspace/tree/0.3.1) - (2023-01-31)
 
 ###Fixes
+
 - Adjusted Get-GoogleAdminUser so that it takes EITHER 'IDs' or 'domain' and not both at the same time.
 - Publicly exported Set-GoogleWorkspaceScopes.
 
