@@ -13,6 +13,7 @@
 - First release to PowerShell Gallery
 
 ### Other
+
 - Removed the 'Prerelease' tage from the module to more easily insteall it from the PowerShell Gallery.
 
 ## [0.3.0](https://github.com/Sekers/GoogleWorkspace/tree/0.3.0) - (2023-01-30)
