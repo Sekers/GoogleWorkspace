@@ -7,11 +7,6 @@
 - Adjusted Get-GoogleAdminUser so that it takes EITHER 'IDs' or 'domain' and not both at the same time.
 - Publicly exported Set-GoogleWorkspaceScopes.
 
-### Features
-
-- Enlarge module focus from the Google Classroom API to the Google Workspace API.
-- First release to PowerShell Gallery
-
 ### Other
 
 - Removed the 'Prerelease' tag from the module to more easily install it from the PowerShell Gallery.
