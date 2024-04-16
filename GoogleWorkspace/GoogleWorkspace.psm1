@@ -655,7 +655,7 @@ Function Get-PagedEntity
                 else # No Response Field
                 {
                     $allRecords += $apiItems
-                    $pageRecordCount = $apiItems.count # Not currently used by can be useful for troubleshooting.
+                    $pageRecordCount = $apiItems.count # Not currently used but can be useful for troubleshooting.
                 }
                 
                 $totalRecordCount = $allRecords.count

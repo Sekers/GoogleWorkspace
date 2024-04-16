@@ -1,12 +1,38 @@
-# https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
-# Returns user profile information via the Google Workspace Admin SDK Directory API.
-# Scope suggested: https://www.googleapis.com/auth/admin.directory.user.readonly
-# Note that non-admin users can use this scope as well
-# (A non-admin user can make a 'users.get' or 'users.list' request with the viewType parameter
-#  equal to 'domain_public' to retrieve a user's public profile.)
+    <#
+        .LINK
+        https://github.com/Sekers/GoogleWorkspace/wiki
+        
+        .LINK
+        Endpoint: https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
+        
+        .SYNOPSIS
+        Google Workspace Admin - Returns user profile information via the Google Workspace Admin SDK Directory API.
 
-# Parameter,Required,Type,Description
-# IDs,no,string,Comma-delimited identifier of the Google user IDs you want profile information for.
+        .DESCRIPTION
+        Google Workspace Admin - Returns user profile information via the Google Workspace Admin SDK Directory API.
+        
+        Filter by User ID(s) or Domain.
+
+        Scope suggested: https://www.googleapis.com/auth/admin.directory.user.readonly
+        Note that non-admin users can use this scope as well
+        (A non-admin user can make a 'users.get' or 'users.list' request with the viewType parameter
+        equal to 'domain_public' to retrieve a user's public profile.)
+
+        .PARAMETER IDs
+        Comma-delimited identifier of the Google user IDs you want profile information for.
+        .PARAMETER domain
+        Specify Google domain to retreive all users from. The system returns a list of users in the alphabetical order of the user's email address.
+        .PARAMETER ResponseLimit
+        When using the 'domain' parameter, optionally limit the number of responses.
+
+        .EXAMPLE
+        Get-GoogleAdminUser -IDs 'john.doe@mydomain.com'
+        .EXAMPLE
+        Get-GoogleAdminUser -domain 'mydomain.com'
+        .EXAMPLE
+        Get-GoogleAdminUser -domain 'mydomain.com' -ResponseLimit 300
+
+    #>
 
 function Get-GoogleAdminUser
 { 
