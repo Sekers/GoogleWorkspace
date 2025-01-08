@@ -1,5 +1,15 @@
 # Changelog for Google Workspace PowerShell Module
 
+## [0.3.2](https://github.com/Sekers/GoogleWorkspace/tree/0.3.2) - (2025-01-08)
+
+### Fixes
+
+- Increase sleep time when hitting Google Workspace API limit (it was too short before as Google has a per-minute limit on most endpoints).
+
+### Other
+
+- Added 'Set-GoogleWorkspaceScopes' to the example commands listing.
+
 ## [0.3.1](https://github.com/Sekers/GoogleWorkspace/tree/0.3.1) - (2023-01-31)
 
 ### Fixes

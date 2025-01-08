@@ -9,14 +9,29 @@
 <#
     Retrieve the Google Workspace Module Configuration File
 #>
-# Get-GoogleWorkspaceConfig -ConfigPath '.\Sample_Usage_Scripts\Config\google_workspace_api_config.json'
+# Get-GoogleWorkspaceConfig -ConfigPath '.\Sample_Usage_Scripts\Config\config_google_workspace_api.json'
 
 <#
     Set the Necessary File Paths.
     Both These *MUST* Be Set Prior to Running Commands.
 #>
-# Set-GoogleWorkspaceConfigFilePath -Path "$PSScriptRoot\Config\google_workspace_api_config.json" # The location where you placed the credentials file you downloaded from the Google developer console.
+# Set-GoogleWorkspaceConfigFilePath -Path "$PSScriptRoot\Config\config_google_workspace_api.json" # The location where you placed the credentials file you downloaded from the Google developer console.
 # Set-GoogleWorkspaceTokensFilePath -Path "$env:USERPROFILE\API_Tokens\myapp_google_workspace_key.json" # The location where you want the encrypted access and refresh tokens to be stored.
+
+<#
+    Set the Necessary Google Workspace API Scopes.
+    This *MUST* Be Set Prior to Running Commands. However, the scopes necessary are dependent on the data you are working with.
+    Example scopes lists:
+    -> https://developers.google.com/admin-sdk/directory/v1/guides/authorizing
+    -> https://www.googleapis.com/auth/classroom.rosters
+#>
+# $Scopes = @(
+#     'https://www.googleapis.com/auth/admin.directory.user.readonly' # Admin SDK API: See info about users on your domain. (For Get-GoogleAdminUser to get a list of Google IDs.)
+#     'https://www.googleapis.com/auth/classroom.courses' # Google Classroom API: See, edit, create, and permanently delete your Google Classroom classes.
+#     'https://www.googleapis.com/auth/classroom.rosters' # Google Classroom API: Manage your Google Classroom class rosters.
+#     'https://www.googleapis.com/auth/classroom.guardianlinks.students' # Google Classroom API: View and manage guardians for students in your Google Classroom classes.
+# )
+# Set-GoogleWorkspaceScopes -Scopes $Scopes
 
 <#
     Optionally, Test Connecting to the Google Workspace API Service.

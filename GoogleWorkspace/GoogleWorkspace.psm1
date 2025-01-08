@@ -1,4 +1,4 @@
-﻿# Google Workspae API Module
+﻿# Google Workspace API Module
 # More info available at https://developers.google.com/classroom & https://developers.google.com/identity/protocols/oauth2
 
 # Configure script to use TLS 1.2
@@ -482,14 +482,14 @@ Function Get-GoogleAPINewTokens
     # Load Web assembly
     [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
 
-    # Build authorisation URI
+    # Build authorization URI
     $strUri = $auth_uri +
     "?client_id=$client_id" +
     "&redirect_uri=" + [System.Web.HttpUtility]::UrlEncode($redirect_uri) +
     '&scope=' + [System.Web.HttpUtility]::UrlEncode($google_workspace_api_scopes) +
     '&response_type=code'
 
-    # Get Authorization code (one-time use code)
+    # Get authorization code (one-time use code)
     $authOutput = Show-GoogleAPIOAuthWindow -Url $strUri -AuthenticationMethod $AuthenticationMethod -ClearBrowserControlCache:$ClearBrowserControlCache
 
     # Swap authorization code (one-time use) for an access token and a refresh token.
@@ -930,10 +930,11 @@ function CatchInvokeErrors($InvokeError)
                 }
             }
         }
-        429 # Rate limit is exceeded (Too many requests). Try again in 1 seconds. 
+        429 # Rate limit is exceeded (Too many requests). Try again in 1 MINUTE. 
         {
-            # Sleep for 1 second and return the try command.
-            Start-Sleep -Seconds 1
+            # Sleep for 65 seconds. This is just past a minute, which is what Google usually enforces (depending on which Google Workspace API endpoint) and return the try command.
+            # Example Rate Limits Info: https://developers.google.com/classroom/reference/limits
+            Start-Sleep -Seconds 65
             'retry'
         }
         500 # Internal Server Error (Backend error). 
