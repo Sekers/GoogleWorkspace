@@ -9,13 +9,13 @@
 <#
     Retrieve the Google Workspace Module Configuration File
 #>
-# Get-GoogleWorkspaceConfig -ConfigPath '.\Sample_Usage_Scripts\Config\google_workspace_api_config.json'
+# Get-GoogleWorkspaceConfig -ConfigPath '.\Sample_Usage_Scripts\Config\config_google_workspace_api.json'
 
 <#
     Set the Necessary File Paths.
     Both These *MUST* Be Set Prior to Running Commands.
 #>
-# Set-GoogleWorkspaceConfigFilePath -Path "$PSScriptRoot\Config\google_workspace_api_config.json" # The location where you placed the credentials file you downloaded from the Google developer console.
+# Set-GoogleWorkspaceConfigFilePath -Path "$PSScriptRoot\Config\config_google_workspace_api.json" # The location where you placed the credentials file you downloaded from the Google developer console.
 # Set-GoogleWorkspaceTokensFilePath -Path "$env:USERPROFILE\API_Tokens\myapp_google_workspace_key.json" # The location where you want the encrypted access and refresh tokens to be stored.
 
 <#
