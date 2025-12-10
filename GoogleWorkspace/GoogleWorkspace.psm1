@@ -253,7 +253,7 @@ Function Show-GoogleAPIOAuthWindow
 
                         # Download WebView2 Evergreen Bootstrapper
                         $DownloadURL = "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
-                        $DownloadContent = Invoke-WebRequest -Uri $DownloadURL
+                        $DownloadContent = Invoke-WebRequest -UseBasicParsing -Uri $DownloadURL
                         $DownloadFileName = "Microsoft Edge WebView2 Runtime Installer.exe"
 
                         # Create the file (this will overwrite any existing file with the same name)
